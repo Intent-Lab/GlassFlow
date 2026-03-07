@@ -1,5 +1,9 @@
 # GlassFlow
 
+<p align="center">
+  <img src="glassflow.png" alt="GlassFlow - Face-to-Face Transcription" width="600">
+</p>
+
 Real-time transcription for Meta Ray-Ban smart glasses. Captures audio from your glasses (or phone mic) and transcribes it live using Deepgram's streaming API, with speaker diarization and partial results.
 
 **Supported platforms:** iOS (iPhone) and Android (Pixel, Samsung, etc.)
