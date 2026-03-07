@@ -211,10 +211,14 @@ class StreamSessionViewModel: ObservableObject {
     errorListenerToken = streamSession.errorPublisher.listen { [weak self] error in
       Task { @MainActor [weak self] in
         guard let self else { return }
-        // Suppress device-not-found errors when user hasn't started streaming yet
+        // Suppress transient SDK errors when user hasn't started streaming yet
         if self.streamingStatus == .stopped {
           if case .deviceNotConnected = error { return }
           if case .deviceNotFound = error { return }
+          if case .internalError = error {
+            NSLog("[Stream] Suppressed internal error on pre-streaming screen")
+            return
+          }
         }
         let newErrorMessage = formatStreamingError(error)
         if newErrorMessage != self.errorMessage {
