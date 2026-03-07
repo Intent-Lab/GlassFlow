@@ -68,7 +68,7 @@ class StreamViewModel(
   private var videoJob: Job? = null
   private var stateJob: Job? = null
 
-  // VisionClaw additions
+  // GlassFlow additions
   var geminiViewModel: GeminiSessionViewModel? = null
   var webrtcViewModel: WebRTCSessionViewModel? = null
   private var phoneCameraManager: PhoneCameraManager? = null

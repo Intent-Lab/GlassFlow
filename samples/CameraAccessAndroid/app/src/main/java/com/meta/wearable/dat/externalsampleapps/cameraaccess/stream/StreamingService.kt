@@ -31,7 +31,7 @@ class StreamingService : Service() {
     private const val CHANNEL_ID = "streaming_channel"
     private const val CHANNEL_NAME = "Camera Streaming"
     private const val NOTIFICATION_ID = 1001
-    private const val WAKELOCK_TAG = "VisionClaw::StreamingWakeLock"
+    private const val WAKELOCK_TAG = "GlassFlow::StreamingWakeLock"
 
     fun start(context: Context) {
       val intent =

@@ -23,7 +23,7 @@ object WebRTCConfig {
     private const val STUN_URL = "stun:stun.l.google.com:19302"
 
     // ExpressTURN credentials endpoint
-    private const val TURN_CREDENTIALS_URL = "https://visionclaw-turn-creds.fly.dev/credentials"
+    private const val TURN_CREDENTIALS_URL = "https://glassflow-turn-creds.fly.dev/credentials"
 
     val signalingServerURL: String
         get() = SettingsManager.webrtcSignalingURL

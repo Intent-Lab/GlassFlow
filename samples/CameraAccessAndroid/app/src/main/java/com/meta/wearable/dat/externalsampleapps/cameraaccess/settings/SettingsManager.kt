@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import com.meta.wearable.dat.externalsampleapps.cameraaccess.Secrets
 
 object SettingsManager {
-    private const val PREFS_NAME = "visionclaw_settings"
+    private const val PREFS_NAME = "glassflow_settings"
 
     private lateinit var prefs: SharedPreferences
 

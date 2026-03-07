@@ -66,7 +66,7 @@ dependencies {
   implementation(libs.mwdat.core)
   implementation(libs.mwdat.camera)
   implementation(libs.mwdat.mockdevice)
-  // VisionClaw additions
+  // GlassFlow additions
   implementation(libs.okhttp)
   implementation(libs.webrtc)
   implementation(libs.camerax.core)

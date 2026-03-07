@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for visionclaw-signaling on 2026-02-11T03:09:44-07:00
+# fly.toml app configuration file generated for glassflow-signaling
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'visionclaw-signaling'
+app = 'glassflow-signaling'
 primary_region = 'sjc'
 
 [build]
