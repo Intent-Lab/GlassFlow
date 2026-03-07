@@ -203,8 +203,14 @@ class DeepgramService: NSObject {
       NSLog("[Deepgram] Session started, request_id: %@", json["request_id"] as? String ?? "unknown")
     } else if type == "Error" {
       let message = json["message"] as? String ?? "Unknown error"
-      NSLog("[Deepgram] Error: %@", message)
+      NSLog("[Deepgram] API error: %@", message)
       updateState(.error(message))
+      // Deepgram server errors (e.g. "internal error") -- disconnect and reconnect
+      webSocket?.cancel(with: .normalClosure, reason: nil)
+      webSocket = nil
+      urlSession?.invalidateAndCancel()
+      urlSession = nil
+      attemptReconnect()
     }
   }
 }
