@@ -10,7 +10,8 @@
 // StreamView.swift
 //
 // Main UI for GlassFlow real-time transcription.
-// White background with transcript as the primary content area.
+// Clean white background with transcript as primary content.
+// Controls use .ultraThinMaterial for a Liquid Glass aesthetic.
 //
 
 import MWDATCore
@@ -29,7 +30,6 @@ struct StreamView: View {
         .edgesIgnoringSafeArea(.all)
 
       VStack(spacing: 0) {
-        // Top bar
         TopBar(
           transcriptionVM: transcriptionVM,
           geminiVM: geminiVM,
@@ -38,12 +38,10 @@ struct StreamView: View {
 
         Divider()
 
-        // Main transcript area
         TranscriptionContentView(viewModel: transcriptionVM)
 
         Divider()
 
-        // Bottom controls
         ControlsView(
           viewModel: viewModel,
           geminiVM: geminiVM,
@@ -117,8 +115,8 @@ struct TopBar: View {
   var body: some View {
     HStack {
       Text("GlassFlow")
-        .font(.system(size: 22, weight: .bold))
-        .foregroundColor(.black)
+        .font(.title2.bold())
+        .foregroundColor(.primary)
 
       Spacer()
 
@@ -167,13 +165,13 @@ struct StatusBadge: View {
         .fill(color)
         .frame(width: 8, height: 8)
       Text(text)
-        .font(.system(size: 13, weight: .semibold))
-        .foregroundColor(.black.opacity(0.7))
+        .font(.caption.weight(.semibold))
+        .foregroundColor(.primary)
     }
     .padding(.horizontal, 10)
     .padding(.vertical, 6)
-    .background(Color(UIColor.systemGray6))
-    .cornerRadius(14)
+    .background(.ultraThinMaterial)
+    .clipShape(Capsule())
   }
 }
 
@@ -187,22 +185,20 @@ struct ControlsView: View {
 
   var body: some View {
     HStack(spacing: 12) {
-      // Stop streaming
       Button {
         Task { await viewModel.stopSession() }
       } label: {
         Text("Stop")
-          .font(.system(size: 14, weight: .semibold))
+          .font(.subheadline.weight(.semibold))
           .foregroundColor(.white)
           .padding(.horizontal, 18)
           .padding(.vertical, 12)
           .background(Color.red)
-          .cornerRadius(22)
+          .clipShape(Capsule())
       }
 
       Spacer()
 
-      // Transcription toggle
       ControlPill(
         icon: transcriptionVM.isActive ? "text.bubble.fill" : "text.bubble",
         label: "Scribe",
@@ -218,7 +214,6 @@ struct ControlsView: View {
         }
       }
 
-      // Gemini AI toggle
       ControlPill(
         icon: geminiVM.isGeminiActive ? "waveform.circle.fill" : "waveform.circle",
         label: "AI",
@@ -234,7 +229,6 @@ struct ControlsView: View {
         }
       }
 
-      // WebRTC Live toggle
       ControlPill(
         icon: webrtcVM.isActive
           ? "antenna.radiowaves.left.and.right.circle.fill"
@@ -266,15 +260,21 @@ struct ControlPill: View {
     Button(action: action) {
       HStack(spacing: 5) {
         Image(systemName: icon)
-          .font(.system(size: 15))
+          .font(.subheadline)
         Text(label)
-          .font(.system(size: 14, weight: .semibold))
+          .font(.subheadline.weight(.semibold))
       }
-      .foregroundColor(isActive ? .white : .black)
+      .foregroundColor(isActive ? .white : .primary)
       .padding(.horizontal, 14)
       .padding(.vertical, 11)
-      .background(isActive ? Color.black : Color(UIColor.systemGray6))
-      .cornerRadius(22)
+      .background {
+        if isActive {
+          Capsule().fill(Color.primary)
+        } else {
+          Capsule().fill(.ultraThinMaterial)
+        }
+      }
+      .clipShape(Capsule())
     }
     .opacity(isDisabled ? 0.5 : 1.0)
     .disabled(isDisabled)

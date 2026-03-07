@@ -19,37 +19,37 @@ struct TranscriptionContentView: View {
   }
 
   private var emptyState: some View {
-    VStack(spacing: 12) {
+    VStack(spacing: 10) {
       Image(systemName: "text.bubble")
-        .font(.system(size: 40))
-        .foregroundColor(.gray)
+        .font(.title)
+        .foregroundColor(.secondary)
       Text("Tap Scribe to start transcribing")
-        .font(.system(size: 16))
-        .foregroundColor(.gray)
+        .font(.body)
+        .foregroundColor(.secondary)
     }
   }
 
   private var listeningState: some View {
-    VStack(spacing: 12) {
+    VStack(spacing: 10) {
       Image(systemName: "waveform")
-        .font(.system(size: 32))
-        .foregroundColor(.black.opacity(0.4))
+        .font(.title)
+        .foregroundColor(.secondary)
       Text("Listening...")
-        .font(.system(size: 16, weight: .medium))
-        .foregroundColor(.black.opacity(0.5))
+        .font(.body.weight(.medium))
+        .foregroundColor(.secondary)
     }
   }
 
   private var transcriptList: some View {
     ScrollViewReader { proxy in
       ScrollView(.vertical, showsIndicators: false) {
-        LazyVStack(alignment: .leading, spacing: 16) {
+        LazyVStack(alignment: .leading, spacing: 20) {
           ForEach(viewModel.segments) { segment in
             SegmentRow(segment: segment)
               .id(segment.id)
           }
         }
-        .padding(.horizontal, 24)
+        .padding(.horizontal, 36)
         .padding(.vertical, 16)
       }
       .onChange(of: viewModel.segments.count) { _ in
@@ -77,38 +77,23 @@ struct SegmentRow: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 4) {
-      // Speaker label + timestamp
       HStack(spacing: 6) {
         if let speaker = segment.speaker {
           Text("Speaker \(speaker + 1)")
-            .font(.system(size: 12, weight: .semibold))
-            .foregroundColor(speakerColor(speaker))
+            .font(.caption.weight(.medium))
+            .foregroundColor(.secondary)
         }
         Text(timeString(segment.timestamp))
-          .font(.system(size: 11, design: .monospaced))
-          .foregroundColor(.gray)
+          .font(.caption2.monospaced())
+          .foregroundColor(.secondary)
       }
 
-      // Transcript text
       Text(segment.text)
-        .font(.system(size: 17))
-        .foregroundColor(segment.isFinal ? .black : .black.opacity(0.4))
+        .font(.body)
+        .foregroundColor(segment.isFinal ? .primary : .secondary)
         .fixedSize(horizontal: false, vertical: true)
-        .lineSpacing(3)
+        .lineSpacing(4)
     }
-    .padding(.vertical, 4)
-  }
-
-  private func speakerColor(_ speaker: Int) -> Color {
-    let colors: [Color] = [
-      Color(hex: "3478F6"),  // blue
-      Color(hex: "E67E22"),  // orange
-      Color(hex: "27AE60"),  // green
-      Color(hex: "8E44AD"),  // purple
-      Color(hex: "E74C8B"),  // pink
-      Color(hex: "16A8A8"),  // teal
-    ]
-    return colors[speaker % colors.count]
   }
 
   private func timeString(_ date: Date) -> String {
