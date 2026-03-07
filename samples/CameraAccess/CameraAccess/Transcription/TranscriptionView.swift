@@ -76,23 +76,23 @@ struct SegmentRow: View {
   let segment: TranscriptSegment
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 4) {
+    VStack(alignment: .leading, spacing: 6) {
       HStack(spacing: 6) {
         if let speaker = segment.speaker {
           Text("Speaker \(speaker + 1)")
-            .font(.caption.weight(.medium))
-            .foregroundColor(.secondary)
+            .font(.subheadline.weight(.semibold))
+            .foregroundColor(.primary)
         }
         Text(timeString(segment.timestamp))
-          .font(.caption2.monospaced())
-          .foregroundColor(.secondary)
+          .font(.caption.monospaced())
+          .foregroundColor(Color(.tertiaryLabel))
       }
 
       Text(segment.text)
         .font(.body)
-        .foregroundColor(segment.isFinal ? .primary : .secondary)
+        .foregroundColor(segment.isFinal ? .primary : Color(.secondaryLabel))
         .fixedSize(horizontal: false, vertical: true)
-        .lineSpacing(4)
+        .lineSpacing(5)
     }
   }
 

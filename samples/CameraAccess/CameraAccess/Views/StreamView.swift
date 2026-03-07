@@ -25,33 +25,29 @@ struct StreamView: View {
   @ObservedObject var transcriptionVM: TranscriptionViewModel
 
   var body: some View {
-    ZStack {
-      Color.white
-        .edgesIgnoringSafeArea(.all)
+    VStack(spacing: 0) {
+      TopBar(
+        transcriptionVM: transcriptionVM,
+        geminiVM: geminiVM,
+        webrtcVM: webrtcVM
+      )
 
-      VStack(spacing: 0) {
-        TopBar(
-          transcriptionVM: transcriptionVM,
-          geminiVM: geminiVM,
-          webrtcVM: webrtcVM
-        )
+      Divider()
 
-        Divider()
+      TranscriptionContentView(viewModel: transcriptionVM)
 
-        TranscriptionContentView(viewModel: transcriptionVM)
+      Divider()
 
-        Divider()
-
-        ControlsView(
-          viewModel: viewModel,
-          geminiVM: geminiVM,
-          webrtcVM: webrtcVM,
-          transcriptionVM: transcriptionVM
-        )
-        .padding(.horizontal, 20)
-        .padding(.vertical, 16)
-      }
+      ControlsView(
+        viewModel: viewModel,
+        geminiVM: geminiVM,
+        webrtcVM: webrtcVM,
+        transcriptionVM: transcriptionVM
+      )
+      .padding(.horizontal, 20)
+      .padding(.vertical, 16)
     }
+    .background(Color(.systemBackground))
     .onDisappear {
       Task {
         if viewModel.streamingStatus != .stopped {
@@ -170,7 +166,7 @@ struct StatusBadge: View {
     }
     .padding(.horizontal, 10)
     .padding(.vertical, 6)
-    .background(.ultraThinMaterial)
+    .background(Color(.secondarySystemFill))
     .clipShape(Capsule())
   }
 }
@@ -271,7 +267,7 @@ struct ControlPill: View {
         if isActive {
           Capsule().fill(Color.primary)
         } else {
-          Capsule().fill(.ultraThinMaterial)
+          Capsule().fill(Color(.secondarySystemFill))
         }
       }
       .clipShape(Capsule())
