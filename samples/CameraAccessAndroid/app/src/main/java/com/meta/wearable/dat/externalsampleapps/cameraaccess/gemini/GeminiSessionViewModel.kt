@@ -48,6 +48,7 @@ class GeminiSessionViewModel : ViewModel() {
         }
 
         _uiState.value = _uiState.value.copy(isGeminiActive = true)
+        RemoteLogger.log("session:start")
 
         // Wire audio callbacks
         audioManager.onAudioCaptured = lambda@{ data ->
@@ -65,6 +66,15 @@ class GeminiSessionViewModel : ViewModel() {
         }
 
         geminiService.onTurnComplete = {
+            // Log finalized transcripts before clearing
+            val userText = _uiState.value.userTranscript
+            val aiText = _uiState.value.aiTranscript
+            if (userText.isNotEmpty()) {
+                RemoteLogger.log("voice:user", mapOf("text" to userText))
+            }
+            if (aiText.isNotEmpty()) {
+                RemoteLogger.log("voice:ai", mapOf("text" to aiText))
+            }
             _uiState.value = _uiState.value.copy(userTranscript = "")
         }
 
@@ -138,6 +148,7 @@ class GeminiSessionViewModel : ViewModel() {
     }
 
     fun stopSession() {
+        RemoteLogger.log("session:end")
         audioManager.stopCapture()
         geminiService.disconnect()
         stateObservationJob?.cancel()

@@ -25,6 +25,18 @@ object SettingsManager {
         get() = prefs.getString("webrtcSignalingURL", null) ?: Secrets.webrtcSignalingURL
         set(value) = prefs.edit().putString("webrtcSignalingURL", value).apply()
 
+    var openClawHost: String
+        get() = prefs.getString("openClawHost", null) ?: Secrets.openClawHost
+        set(value) = prefs.edit().putString("openClawHost", value).apply()
+
+    var openClawPort: Int
+        get() = prefs.getInt("openClawPort", Secrets.openClawPort)
+        set(value) = prefs.edit().putInt("openClawPort", value).apply()
+
+    var openClawGatewayToken: String
+        get() = prefs.getString("openClawGatewayToken", null) ?: Secrets.openClawGatewayToken
+        set(value) = prefs.edit().putString("openClawGatewayToken", value).apply()
+
     fun resetAll() {
         prefs.edit().clear().apply()
     }

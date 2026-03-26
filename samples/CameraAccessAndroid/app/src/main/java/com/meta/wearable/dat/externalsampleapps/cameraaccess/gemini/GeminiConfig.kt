@@ -29,4 +29,14 @@ object GeminiConfig {
     val isConfigured: Boolean
         get() = apiKey != "YOUR_GEMINI_API_KEY" && apiKey.isNotEmpty()
 
+    val openClawHost: String
+        get() = SettingsManager.openClawHost
+
+    val openClawGatewayToken: String
+        get() = SettingsManager.openClawGatewayToken
+
+    val isOpenClawConfigured: Boolean
+        get() = openClawGatewayToken != "YOUR_OPENCLAW_GATEWAY_TOKEN"
+                && openClawGatewayToken.isNotEmpty()
+                && openClawHost != "http://YOUR_MAC_HOSTNAME.local"
 }
