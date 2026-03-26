@@ -1,9 +1,12 @@
 package com.meta.wearable.dat.externalsampleapps.cameraaccess.gemini
 
+import android.app.Application
 import android.graphics.Bitmap
 import android.util.Log
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.meta.wearable.dat.externalsampleapps.cameraaccess.gallery.CapturedPhoto
+import com.meta.wearable.dat.externalsampleapps.cameraaccess.gallery.PhotoCaptureStore
 import com.meta.wearable.dat.externalsampleapps.cameraaccess.stream.StreamingMode
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -12,6 +15,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
 
 data class GeminiUiState(
     val isGeminiActive: Boolean = false,
@@ -22,7 +27,7 @@ data class GeminiUiState(
     val aiTranscript: String = "",
 )
 
-class GeminiSessionViewModel : ViewModel() {
+class GeminiSessionViewModel(application: Application) : AndroidViewModel(application) {
     companion object {
         private const val TAG = "GeminiSessionVM"
     }
@@ -30,9 +35,13 @@ class GeminiSessionViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(GeminiUiState())
     val uiState: StateFlow<GeminiUiState> = _uiState.asStateFlow()
 
+    private val _captureEvent = MutableStateFlow<CapturedPhoto?>(null)
+    val captureEvent: StateFlow<CapturedPhoto?> = _captureEvent.asStateFlow()
+
     private val geminiService = GeminiLiveService()
     private val audioManager = AudioManager()
     private var lastVideoFrameTime: Long = 0
+    private var latestFrame: Bitmap? = null
     private var stateObservationJob: Job? = null
 
     var streamingMode: StreamingMode = StreamingMode.GLASSES
@@ -100,6 +109,31 @@ class GeminiSessionViewModel : ViewModel() {
             }
         }
 
+        // Wire tool call handling
+        geminiService.onToolCall = { toolCall ->
+            for (call in toolCall.functionCalls) {
+                Log.d(TAG, "Tool call: ${call.name} (id: ${call.id}) args: ${call.args}")
+                when (call.name) {
+                    "capture_photo" -> handleCapturePhoto(call)
+                    else -> {
+                        // Other tools (execute) — not configured on Android yet
+                        val response = buildToolResponse(
+                            call.id, call.name,
+                            ToolResult.Failure("Tool '${call.name}' is not configured on Android")
+                        )
+                        geminiService.sendToolResponse(response)
+                    }
+                }
+            }
+        }
+
+        geminiService.onToolCallCancellation = { cancellation ->
+            Log.d(TAG, "Tool call cancellation: ${cancellation.ids}")
+        }
+
+        // Load gallery
+        PhotoCaptureStore.loadPhotos(getApplication())
+
         viewModelScope.launch {
             // Observe service state
             stateObservationJob = viewModelScope.launch {
@@ -157,6 +191,8 @@ class GeminiSessionViewModel : ViewModel() {
     }
 
     fun sendVideoFrameIfThrottled(bitmap: Bitmap) {
+        // Always keep latest frame for capture_photo
+        latestFrame = bitmap
         if (!_uiState.value.isGeminiActive) return
         if (_uiState.value.connectionState != GeminiConnectionState.Ready) return
         val now = System.currentTimeMillis()
@@ -167,6 +203,43 @@ class GeminiSessionViewModel : ViewModel() {
 
     fun clearError() {
         _uiState.value = _uiState.value.copy(errorMessage = null)
+    }
+
+    private fun handleCapturePhoto(call: GeminiFunctionCall) {
+        val description = call.args["description"]?.toString()
+        val frame = latestFrame
+        val ctx = getApplication<Application>()
+
+        val result: ToolResult
+        if (frame != null) {
+            val photo = PhotoCaptureStore.saveFrame(ctx, frame, description)
+            if (photo != null) {
+                _captureEvent.value = photo
+                result = ToolResult.Success("Photo captured and saved: ${photo.filename}")
+            } else {
+                result = ToolResult.Failure("Failed to save photo")
+            }
+        } else {
+            result = ToolResult.Failure("No camera frame available to capture")
+        }
+
+        val response = buildToolResponse(call.id, call.name, result)
+        geminiService.sendToolResponse(response)
+        Log.d(TAG, "capture_photo result: $result")
+    }
+
+    private fun buildToolResponse(callId: String, name: String, result: ToolResult): JSONObject {
+        return JSONObject().apply {
+            put("toolResponse", JSONObject().apply {
+                put("functionResponses", JSONArray().apply {
+                    put(JSONObject().apply {
+                        put("id", callId)
+                        put("name", name)
+                        put("response", result.toResponseValue())
+                    })
+                })
+            })
+        }
     }
 
     override fun onCleared() {

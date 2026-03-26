@@ -45,6 +45,8 @@ class GeminiLiveService {
     var onDisconnected: ((String?) -> Unit)? = null
     var onInputTranscription: ((String) -> Unit)? = null
     var onOutputTranscription: ((String) -> Unit)? = null
+    var onToolCall: ((GeminiToolCall) -> Unit)? = null
+    var onToolCallCancellation: ((GeminiToolCallCancellation) -> Unit)? = null
 
     // Latency tracking
     private var lastUserSpeechEnd: Long = 0
@@ -170,6 +172,13 @@ class GeminiLiveService {
         }
     }
 
+    fun sendToolResponse(response: JSONObject) {
+        if (_connectionState.value != GeminiConnectionState.Ready) return
+        sendExecutor.execute {
+            webSocket?.send(response.toString())
+        }
+    }
+
     // Private
 
     private fun resolveConnect(success: Boolean) {
@@ -208,6 +217,9 @@ class GeminiLiveService {
                 })
                 put("inputAudioTranscription", JSONObject())
                 put("outputAudioTranscription", JSONObject())
+                put("tools", JSONArray().put(JSONObject().apply {
+                    put("functionDeclarations", ToolDeclarations.allDeclarations())
+                }))
             })
         }
         // Send directly (not via sendExecutor) to ensure it's the first message
@@ -222,6 +234,20 @@ class GeminiLiveService {
             if (json.has("setupComplete")) {
                 _connectionState.value = GeminiConnectionState.Ready
                 resolveConnect(true)
+                return
+            }
+
+            // Tool call
+            GeminiToolCall.parse(json)?.let { toolCall ->
+                Log.d(TAG, "Received tool call: ${toolCall.functionCalls.map { it.name }}")
+                onToolCall?.invoke(toolCall)
+                return
+            }
+
+            // Tool call cancellation
+            GeminiToolCallCancellation.parse(json)?.let { cancellation ->
+                Log.d(TAG, "Received tool call cancellation: ${cancellation.ids}")
+                onToolCallCancellation?.invoke(cancellation)
                 return
             }
 

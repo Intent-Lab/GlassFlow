@@ -14,18 +14,31 @@ import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -34,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.meta.wearable.dat.externalsampleapps.cameraaccess.gallery.CapturedPhoto
 import com.meta.wearable.dat.camera.types.StreamSessionState
 import com.meta.wearable.dat.externalsampleapps.cameraaccess.R
 import com.meta.wearable.dat.externalsampleapps.cameraaccess.gemini.GeminiSessionViewModel
@@ -61,8 +75,36 @@ fun StreamScreen(
     val streamUiState by streamViewModel.uiState.collectAsStateWithLifecycle()
     val geminiUiState by geminiViewModel.uiState.collectAsStateWithLifecycle()
     val webrtcUiState by webrtcViewModel.uiState.collectAsStateWithLifecycle()
+    val captureEvent by geminiViewModel.captureEvent.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
+
+    // Gallery navigation state
+    var showGallery by remember { mutableStateOf(false) }
+    var selectedGalleryPhoto by remember { mutableStateOf<CapturedPhoto?>(null) }
+
+    // Show toast when photo is captured via Gemini
+    LaunchedEffect(captureEvent) {
+        captureEvent?.let {
+            Toast.makeText(context, "Photo captured", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Gallery screens
+    if (selectedGalleryPhoto != null) {
+        GalleryDetailScreen(
+            photo = selectedGalleryPhoto!!,
+            onBack = { selectedGalleryPhoto = null }
+        )
+        return
+    }
+    if (showGallery) {
+        GalleryScreen(
+            onBack = { showGallery = false },
+            onPhotoSelected = { selectedGalleryPhoto = it }
+        )
+        return
+    }
 
     // Wire Gemini VM to Stream VM for frame forwarding
     LaunchedEffect(geminiViewModel) {
@@ -132,9 +174,29 @@ fun StreamScreen(
         Box(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
             // Top overlays (below status bar)
             Column(modifier = Modifier.align(Alignment.TopStart).statusBarsPadding().padding(top = 8.dp)) {
-                // Gemini overlay
-                if (geminiUiState.isGeminiActive) {
-                    GeminiOverlay(uiState = geminiUiState)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Gemini overlay
+                    if (geminiUiState.isGeminiActive) {
+                        GeminiOverlay(uiState = geminiUiState)
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    // Gallery button
+                    if (geminiUiState.isGeminiActive) {
+                        Surface(
+                            shape = CircleShape,
+                            color = Color.Black.copy(alpha = 0.5f),
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            IconButton(onClick = { showGallery = true }) {
+                                Icon(
+                                    Icons.Default.PhotoLibrary,
+                                    contentDescription = "Gallery",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    }
                 }
 
                 // WebRTC overlay
