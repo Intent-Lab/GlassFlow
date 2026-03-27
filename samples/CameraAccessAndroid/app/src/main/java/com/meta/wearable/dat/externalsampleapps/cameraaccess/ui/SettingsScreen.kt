@@ -43,18 +43,27 @@ fun SettingsScreen(
     var geminiAPIKey by remember { mutableStateOf(SettingsManager.geminiAPIKey) }
     var systemPrompt by remember { mutableStateOf(SettingsManager.geminiSystemPrompt) }
     var webrtcSignalingURL by remember { mutableStateOf(SettingsManager.webrtcSignalingURL) }
+    var openClawHost by remember { mutableStateOf(SettingsManager.openClawHost) }
+    var openClawPort by remember { mutableStateOf(SettingsManager.openClawPort.toString()) }
+    var openClawToken by remember { mutableStateOf(SettingsManager.openClawGatewayToken) }
     var showResetDialog by remember { mutableStateOf(false) }
 
     fun save() {
         SettingsManager.geminiAPIKey = geminiAPIKey.trim()
         SettingsManager.geminiSystemPrompt = systemPrompt.trim()
         SettingsManager.webrtcSignalingURL = webrtcSignalingURL.trim()
+        SettingsManager.openClawHost = openClawHost.trim()
+        SettingsManager.openClawPort = openClawPort.trim().toIntOrNull() ?: 18789
+        SettingsManager.openClawGatewayToken = openClawToken.trim()
     }
 
     fun reload() {
         geminiAPIKey = SettingsManager.geminiAPIKey
         systemPrompt = SettingsManager.geminiSystemPrompt
         webrtcSignalingURL = SettingsManager.webrtcSignalingURL
+        openClawHost = SettingsManager.openClawHost
+        openClawPort = SettingsManager.openClawPort.toString()
+        openClawToken = SettingsManager.openClawGatewayToken
     }
 
     Column(modifier = modifier.fillMaxSize()) {
@@ -94,6 +103,29 @@ fun SettingsScreen(
                 label = { Text("System prompt") },
                 modifier = Modifier.fillMaxWidth().height(200.dp),
                 textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+            )
+
+            // OpenClaw section
+            SectionHeader("OpenClaw")
+            MonoTextField(
+                value = openClawHost,
+                onValueChange = { openClawHost = it },
+                label = "Host",
+                placeholder = "http://your-mac.local",
+                keyboardType = KeyboardType.Uri,
+            )
+            MonoTextField(
+                value = openClawPort,
+                onValueChange = { openClawPort = it },
+                label = "Port",
+                placeholder = "18789",
+                keyboardType = KeyboardType.Number,
+            )
+            MonoTextField(
+                value = openClawToken,
+                onValueChange = { openClawToken = it },
+                label = "Gateway Token",
+                placeholder = "Enter gateway auth token",
             )
 
             // WebRTC section
