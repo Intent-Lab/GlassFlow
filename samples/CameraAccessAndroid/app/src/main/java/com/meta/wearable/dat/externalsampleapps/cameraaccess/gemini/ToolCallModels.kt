@@ -93,6 +93,10 @@ object ToolDeclarations {
                         put("type", "string")
                         put("description", "Clear, detailed description of what to do. Include all relevant context: names, content, platforms, quantities, etc.")
                     })
+                    put("include_image", JSONObject().apply {
+                        put("type", "boolean")
+                        put("description", "Set to true ONLY when the task requires the agent to see the current camera image (e.g. editing a photo, identifying a product by appearance, reading text from a sign). Do NOT set for tasks that can be described in text alone.")
+                    })
                 })
                 put("required", JSONArray().put("task"))
             })

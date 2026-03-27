@@ -117,6 +117,10 @@ class GeminiSessionViewModel(application: Application) : AndroidViewModel(applic
                     "capture_photo" -> handleCapturePhoto(call)
                     else -> {
                         // Other tools (execute) — not configured on Android yet
+                        val includeImage = call.args["include_image"] as? Boolean ?: false
+                        if (includeImage) {
+                            Log.d(TAG, "Tool '${call.name}' requested image but OpenClaw not configured on Android")
+                        }
                         val response = buildToolResponse(
                             call.id, call.name,
                             ToolResult.Failure("Tool '${call.name}' is not configured on Android")
