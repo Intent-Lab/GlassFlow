@@ -180,21 +180,19 @@ fun StreamScreen(
                         GeminiOverlay(uiState = geminiUiState)
                     }
                     Spacer(modifier = Modifier.weight(1f))
-                    // Gallery button
-                    if (geminiUiState.isGeminiActive) {
-                        Surface(
-                            shape = CircleShape,
-                            color = Color.Black.copy(alpha = 0.5f),
-                            modifier = Modifier.size(36.dp)
-                        ) {
-                            IconButton(onClick = { showGallery = true }) {
-                                Icon(
-                                    Icons.Default.PhotoLibrary,
-                                    contentDescription = "Gallery",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
+                    // Gallery button (always visible for browsing past captures)
+                    Surface(
+                        shape = CircleShape,
+                        color = Color.Black.copy(alpha = 0.5f),
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        IconButton(onClick = { showGallery = true }) {
+                            Icon(
+                                Icons.Default.PhotoLibrary,
+                                contentDescription = "Gallery",
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
                         }
                     }
                 }
